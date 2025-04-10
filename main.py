@@ -1,6 +1,7 @@
 from tkinter import messagebox
 from tkinter import *
 from random import *
+import json
 import pyperclip
 
 def generate_password():
@@ -20,21 +21,33 @@ def generate_password():
     pyperclip.copy(password)#copia direto sem precisar de ctrl c, pode fazer ctrl v direto
 
 def save_txt():
-    text_email = entry_email.get()
-    text_password = entry_password.get()
-    text_website = entry_website.get()
-    if text_password == "" or text_website == "":
-        is_not_clear = messagebox.showinfo(title="Oops", message="Please don't leave any fields empty!")
+
+    website = entry_website.get()
+    email = entry_email.get()
+    password = entry_password.get()
+    new_data = {
+        website: {
+            "email": email,
+            "password": password,
+        }
+    }
+
+    if len(website) == 0 or len(password) == 0:
+        messagebox.showinfo(title="Oops", message="Please make sure you haven't left any fields empty.")
     else:
-        is_ok = messagebox.askokcancel(title=text_website,
-                                       message=f"These are the details entered: \nEmail: {text_email} \nPassword: {text_password} \nIs it ok to save?")
-        if is_ok:
-
-            with open("data.txt", "a") as file:
-                file.write(text_website+" | "+text_email+" | "+ text_password+ "\n")
-                entry_password.delete(0, END)
-                entry_website.delete(0, END)
-
+        try:
+            with open('data.json', 'r') as data_file:
+                data = json.load(data_file)
+        except FileNotFoundError:
+            with open('data.json', 'w') as data_file:
+                json.dump(new_data, data_file, indent=4)
+        else:
+            data.update(new_data)
+            with open('data.json', 'w') as data_file:
+                json.dump(data, data_file, indent=4)
+        finally:
+            entry_website.delete(0, END)
+            entry_password.delete(0, END)
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 window = Tk()
